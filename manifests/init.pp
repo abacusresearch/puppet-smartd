@@ -114,32 +114,21 @@
 # Copyright (C) 2013 Joshua Hoblitt
 #
 class smartd (
-  $ensure             = 'present',
-  $package_name       = $smartd::params::package_name,
-  $service_name       = $smartd::params::service_name,
-  $service_ensure     = $smartd::params::service_ensure,
-  $manage_service     = $smartd::params::manage_service,
-  $config_file        = $smartd::params::config_file,
-  $devicescan         = $smartd::params::devicescan,
-  $devicescan_options = $smartd::params::devicescan_options,
-  $devices            = $smartd::params::devices,
-  $mail_to            = $smartd::params::mail_to,
-  $warning_schedule   = $smartd::params::warning_schedule,
-  $exec_script        = $smartd::params::exec_script,
-  $enable_default     = $smartd::params::enable_default,
-  $default_options    = $smartd::params::default_options,
+  Enum['present','latest','absent','purged'] $ensure          = 'present',
+  String $package_name                                        = $smartd::params::package_name,
+  String $service_name                                        = $smartd::params::service_name,
+  Enum['running','stopped'] $service_ensure                   = $smartd::params::service_ensure,
+  Boolean $manage_service                                     = $smartd::params::manage_service,
+  Stdlib::Absolutepath $config_file                           = $smartd::params::config_file,
+  Boolean $devicescan                                         = $smartd::params::devicescan,
+  Optional[String] $devicescan_options                        = $smartd::params::devicescan_options,
+  Array $devices                                              = $smartd::params::devices,
+  String $mail_to                                             = $smartd::params::mail_to,
+  Enum['daily','once','diminishing','exec'] $warning_schedule = $smartd::params::warning_schedule,
+  Variant[Stdlib::Absolutepath,Boolean[false]] $exec_script   = $smartd::params::exec_script,
+  Boolean $enable_default                                     = $smartd::params::enable_default,
+  Optional[String] $default_options                           = $smartd::params::default_options,
 ) inherits smartd::params {
-  validate_re($ensure, '^present$|^latest$|^absent$|^purged$')
-  validate_string($package_name)
-  validate_string($service_name)
-  validate_re($service_ensure, '^running$|^stopped$')
-  validate_string($config_file)
-  validate_bool($devicescan)
-  validate_string($devicescan_options)
-  validate_array($devices)
-  validate_string($mail_to)
-  validate_re($warning_schedule, '^daily$|^once$|^diminishing$|^exec$',
-    '$warning_schedule must be either daily, once, diminishing, or exec.')
   if $warning_schedule == 'exec' {
     if $exec_script == false {
       fail('$exec_script must be set when $warning_schedule is set to exec.')
@@ -152,8 +141,6 @@ class smartd (
     }
     $real_warning_schedule = $warning_schedule
   }
-  validate_bool($enable_default)
-  validate_string($default_options)
 
   case $ensure {
     'present', 'latest': {
